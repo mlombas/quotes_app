@@ -1,42 +1,75 @@
 import 'package:flutter/material.dart';
 import 'quotes.dart';
+import 'storage.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    QuoteEnterer input = QuoteEnterer();
-
-    Widget mainColumn = Scaffold(
-      body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 50, horizontal: 20),
-        child: Center(
-          child: Column(
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.only(bottom: 10),
-                child: Container(
-                  height: 30,
-                  child: input,
-                ),
-              ),
-              Container(
-                height: 30,
-                alignment: Alignment.centerRight,
-                child: FlatButton(
-                  child: Text('Save'),
-                  onPressed: () => QuoteStorage.addQuote(input.quote),
-                ),
-              ),
-            ],
-          ),
+    return MaterialApp(
+      title: 'Quotes app',
+      home: Scaffold(
+        body: Padding(
+          padding: EdgeInsets.symmetric(vertical: 50, horizontal: 20),
+          child: MainWidget(),
         ),
       ),
     );
-    return MaterialApp(
-      title: 'Quotes app',
-      home: mainColumn,
+  }
+}
+
+class MainWidget extends StatefulWidget {
+  @override
+  _MainWidgetState createState() => _MainWidgetState();
+}
+
+class _MainWidgetState extends State<MainWidget> {
+  @override
+  Widget build(BuildContext context) {
+    //The quote enterer, every time a quote is entered redraw all
+    QuoteEnterer input = QuoteEnterer(callback: () => setState(() {}));
+
+    //List of quotes, needs to be like this because its made with futures
+    Widget list = FutureBuilder(
+      future: QuoteStorage.getQuotes(),
+      builder: (context, snapshot) {
+        Widget child;
+
+        if (snapshot.hasData) {
+          var quotes = snapshot.data;
+          child = ListView.builder(
+            shrinkWrap: true,
+            itemCount: quotes.length,
+            itemBuilder: (context, index) => QuoteView(quotes[index]),
+          );
+        } else {
+          child = CircularProgressIndicator();
+        }
+
+        return Expanded(
+          child: ListView(
+            children: <Widget>[
+              Text('Stored quotes'),
+              child,
+            ],
+          ),
+        );
+      },
+    );
+
+    return Center(
+      child: Column(
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.only(bottom: 10),
+            child: Container(
+              child: input,
+            ),
+          ),
+          list,
+        ],
+      ),
     );
   }
 }

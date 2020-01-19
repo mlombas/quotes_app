@@ -5,6 +5,8 @@ import 'package:path_provider/path_provider.dart';
 import 'quotes.dart';
 
 class QuoteStorage {
+  static var _quotes;
+
   static Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
     return directory.path;
@@ -15,7 +17,9 @@ class QuoteStorage {
     return File('$path/$name.csv');
   }
 
-  static Future<List<Quote>> readQuotes() async {
+  static Future<List<Quote>> _readQuotes() async {
+    print('enter');
+
     var stream = (await _getFile('quotes'))
         .openRead()
         .transform(utf8.decoder)
@@ -23,26 +27,28 @@ class QuoteStorage {
 
     //The Quote constructor will parse the line
     List<Quote> quotes = List<Quote>();
-    await for (var line in stream) {
-      var q = new Quote.fromString(line);
-
-      quotes.add(q);
-    }
+    await for (var line in stream) var q = new Quote.fromString(line);
 
     return quotes;
   }
 
+	static Future<void> loadIfNecessary() async {
+    if (_quotes == null) _quotes = await _readQuotes();
+	}
+
+  static Future<List<Quote>> getQuotes() async {
+		await loadIfNecessary();
+    return _quotes;
+  }
+
   static void addQuote(Quote q) async {
-    var tempFile = await _getFile('temp');
+    //Get the quotes if they are not loaded yet
+    await loadIfNecessary();
+    _quotes.add(q);
 
-    var tempSink = tempFile.openWrite();
-		for(var quote in await readQuotes())
-			tempSink.write('$quote\n');
-    tempSink.write('$q\n');
-
-    //Change existing file by temp one
-    tempFile.rename((await _getFile('quotes')).path);
-
-		print(await readQuotes());
+    var file = await _getFile('quotes');
+    var sink = file.openWrite();
+    for (var q in _quotes) sink.write('$q\n');
+    sink.close();
   }
 }
