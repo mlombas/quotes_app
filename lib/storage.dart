@@ -20,24 +20,26 @@ class QuoteStorage {
   static Future<List<Quote>> _readQuotes() async {
     print('enter');
 
-    var stream = (await _getFile('quotes'))
-        .openRead()
-        .transform(utf8.decoder)
-        .transform(new LineSplitter());
-
-    //The Quote constructor will parse the line
     List<Quote> quotes = List<Quote>();
-    await for (var line in stream) var q = new Quote.fromString(line);
+    var file = await _getFile('quotes');
+    //Load file only if it exists, if not the list remains empty
+    if (await file.exists()) {
+      var stream =
+          file.openRead().transform(utf8.decoder).transform(new LineSplitter());
+
+      //The Quote constructor will parse the line
+      await for (var line in stream) var q = new Quote.fromString(line);
+    }
 
     return quotes;
   }
 
-	static Future<void> loadIfNecessary() async {
+  static Future<void> loadIfNecessary() async {
     if (_quotes == null) _quotes = await _readQuotes();
-	}
+  }
 
   static Future<List<Quote>> getQuotes() async {
-		await loadIfNecessary();
+    await loadIfNecessary();
     return _quotes;
   }
 

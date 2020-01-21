@@ -34,7 +34,7 @@ class QuoteView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: new BoxDecoration(color: Colors.grey[350]),
-      margin: EdgeInsets.all(10.0),
+      margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
       child: Column(
         children: <Widget>[
           Container(

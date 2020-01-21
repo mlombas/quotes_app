@@ -38,17 +38,18 @@ class _MainWidgetState extends State<MainWidget> {
 
         if (snapshot.hasData) {
           var quotes = snapshot.data;
-          child = ListView.builder(
-            shrinkWrap: true,
-            itemCount: quotes.length,
-            itemBuilder: (context, index) => QuoteView(quotes[index]),
+          child = Expanded(
+            child: ListView.builder(
+              itemCount: quotes.length,
+              itemBuilder: (context, index) => QuoteView(quotes[index]),
+            ),
           );
         } else {
           child = CircularProgressIndicator();
         }
 
         return Expanded(
-          child: ListView(
+          child: Column(
             children: <Widget>[
               Text('Stored quotes'),
               child,
@@ -61,11 +62,8 @@ class _MainWidgetState extends State<MainWidget> {
     return Center(
       child: Column(
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(bottom: 10),
-            child: Container(
-              child: input,
-            ),
+          Container(
+            child: input,
           ),
           list,
         ],
